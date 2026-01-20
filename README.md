@@ -24,7 +24,7 @@ __-it__: Path to the file with the HTML template for the main index.html page (t
 
 __-pt__: Path to the file with the HTML template for the posts page. The template must be contains these tags: `{{blogname}}`, `{{title}}`, `{{summary}}`, `{{published}}` and `{{content}}`
 
-### File and Folder Structure
+## File and Folder Structure
 
 Inside the folder whose path you pass as the __-i__ argument (the example below uses `source`), there must be a separate folder for each post. The folder name is used as the URL slug (i.e., the post URL). Each of these folders must contain an `index.md` file, which represents the post itself.
 
@@ -55,7 +55,7 @@ The `index.html` file in the root directory contains links to all posts and effe
 
 If you do not use custom templates (i.e., you did not pass the __-it__ and __-pt__ arguments), you can define your own blog styling. To do this, create a `style.css` file in the root directory.
 
-### Metadata
+## Metadata
 
 Each `index.md` file must start with post metadata in the following format:
 
