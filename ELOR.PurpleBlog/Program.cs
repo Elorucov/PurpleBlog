@@ -9,7 +9,8 @@ namespace ELOR.PurpleBlog
 {
     internal class Program
     {
-        const string INDEX_FILE_NAME = "index.md";
+        const string INDEX_MD_FILE_NAME = "index.md";
+        const string INDEX_HTML_FILE_NAME = "index.html";
         const string DEFAULT_INDEX_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{blogname}}</title><meta name=\"description\" content=\"{{blogdesc}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head><body><main><header>{{blogname}}</header><div class=\"postmeta\">{{blogdesc}}</div><content id=\"index\">{{content}}</content></main></body></html>";
         const string DEFAULT_POST_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{title}} | {{blogname}}</title><meta name=\"description\" content=\"{{summary}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"/></head><body><main><header>{{title}}</header><div class=\"postmeta\">{{published}} • on <a href=\"../\">{{blogname}}</a></div><content>{{content}}</content></main></body></html>";
 
@@ -136,7 +137,7 @@ namespace ELOR.PurpleBlog
                     string postFutureLinkName = mdFilePathSeparated[mdFilePathSeparated.Length - 2];
                     string postHtmlFolderPath = Path.Combine(_outputPath, postFutureLinkName);
                     Directory.CreateDirectory(postHtmlFolderPath);
-                    File.WriteAllText(Path.Combine(postHtmlFolderPath, "index.html"), result);
+                    File.WriteAllText(Path.Combine(postHtmlFolderPath, INDEX_HTML_FILE_NAME), result);
 
                     DateTime publishDate = DateTime.Parse(metadata["published"]);
                     posts.Add(new BlogPost(postFutureLinkName, metadata["title"], metadata["summary"], publishDate));
@@ -152,7 +153,7 @@ namespace ELOR.PurpleBlog
             // Creating index file with posts links
             Console.Write("Creating main index.html with links to posts... ");
             string indexFile = MakeIndexHtmlContent(posts, _indexTemplate);
-            File.WriteAllText(Path.Combine(_outputPath, "index.html"), indexFile);
+            File.WriteAllText(Path.Combine(_outputPath, INDEX_HTML_FILE_NAME), indexFile);
             Console.WriteLine("OK.");
         }
 
@@ -164,7 +165,7 @@ namespace ELOR.PurpleBlog
             List<string> indexFilesPath = new List<string>(filteredChildFolders.Count);
             foreach (var childFolder in CollectionsMarshal.AsSpan(filteredChildFolders))
             {
-                string indexFilePath = Path.Combine(childFolder, INDEX_FILE_NAME);
+                string indexFilePath = Path.Combine(childFolder, INDEX_MD_FILE_NAME);
                 if (!File.Exists(indexFilePath)) continue;
                 indexFilesPath.Add(indexFilePath);
             }
