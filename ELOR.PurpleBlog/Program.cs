@@ -1,6 +1,4 @@
 ﻿using Markdig;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -14,7 +12,7 @@ namespace ELOR.PurpleBlog
         const string INDEX_FILE_NAME = "index.md";
         const string DEFAULT_INDEX_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{blogname}}</title><meta name=\"description\" content=\"{{blogdesc}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head><body><main><header>{{blogname}}</header><div class=\"postmeta\">{{blogdesc}}</div><content id=\"index\">{{content}}</content></main></body></html>";
         const string DEFAULT_POST_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{title}} | {{blogname}}</title><meta name=\"description\" content=\"{{summary}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"/></head><body><main><header>{{title}}</header><div class=\"postmeta\">{{published}} • on <a href=\"../\">{{blogname}}</a></div><content>{{content}}</content></main></body></html>";
-        
+
         static readonly string[] _folderNamesForIgnore = [".git"];
         static readonly string[] _requiredMetadataProps = ["title", "summary", "published"];
         static readonly string[] _deniedMetadataProps = ["blogname", "blogdesc", "content", "stylesheet"];
@@ -28,13 +26,13 @@ namespace ELOR.PurpleBlog
 
         static void Main(string[] args)
         {
-            var ver = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            var ver = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion.Split("+")[0];
             Console.WriteLine($"PurpleBlog v{ver} by Elchin Orujov (https://elor.top)");
             Console.WriteLine($"A tool for converting Markdown files to HTML pages with template.");
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             Dictionary<string, string> arguments = new Dictionary<string, string>();
-            foreach(var arg in args)
+            foreach (var arg in args)
             {
                 if (!arg.StartsWith("-")) PrintInstructionAndQuit();
 
@@ -83,17 +81,17 @@ namespace ELOR.PurpleBlog
 
         private static void PrintInstructionAndQuit()
         {
-            Console.WriteLine($"Usage: {Assembly.GetExecutingAssembly().FullName} -i=/input/path -o=/output/path -n=\"Blog name\" -d=\"Blog description\"");
+            Console.WriteLine($"Usage: {Assembly.GetExecutingAssembly().GetName().Name} -i=/input/path -o=/output/path -n=\"Blog name\" -d=\"Blog description\"");
             Console.WriteLine();
             Console.WriteLine("Required arguments:");
-            Console.WriteLine("i: Path to the folder containing folders with the index.md file.");
-            Console.WriteLine("o: Path to the folder where HTML pages will be saved.");
-            Console.WriteLine("n: Value of this argument will replace the {{blogname}} tag in the template. The value should be the blog name.");
-            Console.WriteLine("d: Value of this argument will replace the {{blogdesc}} tag in the template. The value should be the blog description.");
+            Console.WriteLine("-i: Path to the folder containing folders with the index.md file.");
+            Console.WriteLine("-o: Path to the folder where HTML pages will be saved.");
+            Console.WriteLine("-n: Value of this argument will replace the {{blogname}} tag in the template. The value should be the blog name.");
+            Console.WriteLine("-d: Value of this argument will replace the {{blogdesc}} tag in the template. The value should be the blog description.");
             Console.WriteLine();
             Console.WriteLine("Optional arguments:");
-            Console.WriteLine("it: Path to the file with the HTML template for the main index.html page (that contains links to posts). It must be contains these tags: {{blogname}}, {{blogdesc}} and {{content}}");
-            Console.WriteLine("pt: Path to the file with the HTML template for the posts page. It must be contains these tags: {{blogname}}, {{title}}, {{summary}}, {{published}} and {{content}}");
+            Console.WriteLine("-it: Path to the file with the HTML template for the main index.html page (that contains links to posts). The template must be contains these tags: {{blogname}}, {{blogdesc}} and {{content}}");
+            Console.WriteLine("-pt: Path to the file with the HTML template for the posts page. The template must be contains these tags: {{blogname}}, {{title}}, {{summary}}, {{published}} and {{content}}");
             Environment.Exit(0x75757575);
         }
 
@@ -103,7 +101,8 @@ namespace ELOR.PurpleBlog
             {
                 return File.ReadAllText(path);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine("Cannot read template file: {0}. Error 0x{1}: {2}", path, ex.HResult.ToString("x8"), ex.Message);
             }
             return defaultTemplate;
