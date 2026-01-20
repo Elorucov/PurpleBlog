@@ -1,0 +1,1 @@
+# ELOR.PurpleBlog
