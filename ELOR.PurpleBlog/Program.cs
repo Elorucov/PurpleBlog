@@ -269,7 +269,7 @@ namespace ELOR.PurpleBlog
                 sb.Append($"<h1>{yearPosts.Key}</h1>");
                 foreach (var post in yearPosts)
                 {
-                    sb.Append(string.Format("<p><a href=\"{0}\">{1}</a> <span>{2}</span></p>", post.RelativeUrl, post.Title, post.PublishDate.ToString("M/d")));
+                    sb.Append(string.Format("<p><a href=\"{0}\">{1}</a> <span>{2}</span><div class=\"summary\">{3}</div></p>", post.RelativeUrl, post.Title, post.PublishDate.ToString("M/d"), post.Summary));
                 }
             }
 
