@@ -1,4 +1,8 @@
-# PurpleBlog
+<p align="center"><picture>
+  <source media="(prefers-color-scheme: dark)" width="480px" srcset="Logo/purpleblog_d.png">
+  <source media="(prefers-color-scheme: light)" width="480px" srcset="Logo/purpleblog_l.png">
+  <img alt="Logo" src="Logos/purpleblog_l.png">
+</picture></p>
 
 A tool for converting Markdown files to HTML pages with template.
 
