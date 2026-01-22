@@ -1,7 +1,8 @@
 {
   "profiles": {
     "ELOR.PurpleBlog": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-i=D:\\Docs\\Blog -o=D:\\web\\web\\purpleblog -n=\"ELORBLOG\" -d=\"The Elchin's blog\""
     }
   }
 }

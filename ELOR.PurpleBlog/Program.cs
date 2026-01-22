@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace ELOR.PurpleBlog
@@ -11,8 +12,9 @@ namespace ELOR.PurpleBlog
     {
         const string INDEX_MD_FILE_NAME = "index.md";
         const string INDEX_HTML_FILE_NAME = "index.html";
-        const string DEFAULT_INDEX_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{blogname}}</title><meta name=\"description\" content=\"{{blogdesc}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head><body><main><header>{{blogname}}</header><div class=\"postmeta\">{{blogdesc}}</div><content id=\"index\">{{content}}</content></main></body></html>";
-        const string DEFAULT_POST_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{title}} | {{blogname}}</title><meta name=\"description\" content=\"{{summary}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"/></head><body><main><header>{{title}}</header><div class=\"postmeta\">{{published}} • on <a href=\"../\">{{blogname}}</a></div><content>{{content}}</content></main></body></html>";
+        const string POSTS_JSON_FILE_NAME = "posts.json";
+        const string DEFAULT_INDEX_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{blogname}}</title><meta name=\"description\" content=\"{{blogdesc}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head><body><main><header>{{blogname}}</header><div class=\"postmeta\">{{blogdesc}}</div><content id=\"index\">{{content}}</content><footer>Created by <a target=\"_blank\" href=\"https://github.com/Elorucov/PurpleBlog\">PurpleBlog</a></footer></main></body></html>";
+        const string DEFAULT_POST_TEMPLATE = "<!-- DOCTYPE html --><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>{{title}} | {{blogname}}</title><meta name=\"description\" content=\"{{summary}}\"><meta name=\"robots\" content=\"index, follow\"><link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\"/></head><body><main><header>{{title}}</header><div class=\"postmeta\">{{published}} • on <a href=\"../\">{{blogname}}</a></div><content>{{content}}</content><footer>Created by <a target=\"_blank\" href=\"https://github.com/Elorucov/PurpleBlog\">PurpleBlog</a></footer></main></body></html>";
 
         static readonly string[] _folderNamesForIgnore = [".git"];
         static readonly string[] _requiredMetadataProps = ["title", "summary", "published"];
@@ -55,12 +57,14 @@ namespace ELOR.PurpleBlog
             if (!arguments.TryGetValue("d", out _blogDescription)) PrintInstructionAndQuit();
             Console.WriteLine("Blog description is: {0}", _blogDescription);
 
+            _indexTemplate = DEFAULT_INDEX_TEMPLATE;
             if (arguments.TryGetValue("it", out string indexTemplatePath))
             {
                 _indexTemplate = GetTemplate(indexTemplatePath, DEFAULT_INDEX_TEMPLATE);
                 Console.WriteLine("Loaded template for the main index.html page from {0}", indexTemplatePath);
             }
 
+            _postTemplate = DEFAULT_POST_TEMPLATE;
             if (arguments.TryGetValue("pt", out string postTemplatePath))
             {
                 _postTemplate = GetTemplate(postTemplatePath, DEFAULT_POST_TEMPLATE);
@@ -91,7 +95,7 @@ namespace ELOR.PurpleBlog
             Console.WriteLine("-d: Value of this argument will replace the {{blogdesc}} tag in the template. The value should be the blog description.");
             Console.WriteLine();
             Console.WriteLine("Optional arguments:");
-            Console.WriteLine("-it: Path to the file with the HTML template for the main index.html page (that contains links to posts). The template must be contains these tags: {{blogname}}, {{blogdesc}} and {{content}}");
+            Console.WriteLine("-it: Path to the file with the HTML template for the home page (that contains links to posts). The template must be contains these tags: {{blogname}}, {{blogdesc}} and {{content}}");
             Console.WriteLine("-pt: Path to the file with the HTML template for the posts page. The template must be contains these tags: {{blogname}}, {{title}}, {{summary}}, {{published}} and {{content}}");
             Environment.Exit(0x75757575);
         }
@@ -139,8 +143,11 @@ namespace ELOR.PurpleBlog
                     Directory.CreateDirectory(postHtmlFolderPath);
                     File.WriteAllText(Path.Combine(postHtmlFolderPath, INDEX_HTML_FILE_NAME), result);
 
-                    DateTime publishDate = DateTime.Parse(metadata["published"]);
-                    posts.Add(new BlogPost(postFutureLinkName, metadata["title"], metadata["summary"], publishDate));
+                    if (!metadata.TryGetValue("hidden", out string hiddenProp) || hiddenProp == "false")
+                    {
+                        DateTime publishDate = DateTime.Parse(metadata["published"]);
+                        posts.Add(new BlogPost(postFutureLinkName, metadata["title"], metadata["summary"], publishDate));
+                    }
 
                     Console.WriteLine("OK.");
                 }
@@ -149,6 +156,13 @@ namespace ELOR.PurpleBlog
                     Console.WriteLine("FAIL! ({0})", aex.Message);
                 }
             }
+
+            // Creating JSON with posts info
+            Console.Write("Creating posts JSON file... ");
+            using var jsonFileStream = File.CreateText(Path.Combine(_outputPath, POSTS_JSON_FILE_NAME));
+            await JsonSerializer.SerializeAsync(jsonFileStream.BaseStream, posts);
+            await jsonFileStream.FlushAsync();
+            Console.WriteLine("OK.");
 
             // Creating index file with posts links
             Console.Write("Creating main index.html with links to posts... ");
@@ -266,7 +280,7 @@ namespace ELOR.PurpleBlog
 
             foreach (var yearPosts in postsByYear)
             {
-                sb.Append($"<h1>{yearPosts.Key}</h1>");
+                sb.Append($"<h2>{yearPosts.Key}</h2>");
                 foreach (var post in yearPosts)
                 {
                     sb.Append(string.Format("<p><a href=\"{0}\">{1}</a> <span>{2}</span><div class=\"summary\">{3}</div></p>", post.RelativeUrl, post.Title, post.PublishDate.ToString("M/d"), post.Summary));
