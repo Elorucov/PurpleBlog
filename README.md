@@ -1,6 +1,6 @@
 <p align="center"><picture>
-  <source media="(prefers-color-scheme: dark)" width="480px" srcset="Logo/purpleblog_d.png">
-  <source media="(prefers-color-scheme: light)" width="480px" srcset="Logo/purpleblog_l.png">
+  <source media="(prefers-color-scheme: dark)" width="492px" srcset="Logo/purpleblog_d.png">
+  <source media="(prefers-color-scheme: light)" width="492px" srcset="Logo/purpleblog_l.png">
   <img alt="Logo" src="Logos/purpleblog_l.png">
 </picture></p>
 
